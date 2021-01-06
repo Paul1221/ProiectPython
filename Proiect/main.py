@@ -7,6 +7,10 @@ from win32api import GetSystemMetrics
 
 class SnakePart:
     def __init__(self, x, y):
+        """
+        :param x: the x coordinate of the part
+        :param y: the y coordinate of the part
+        """
         super().__init__()
         self.x = x
         self.y = y
@@ -15,12 +19,21 @@ class SnakePart:
 
 class Fruit:
     def __init__(self, x, y):
+        """
+        :param x: the x coordinate of the part
+        :param y: the y coordinate of the part
+        """
         super().__init__()
         self.x = x
         self.y = y
         self.color = (255, 0, 0)
 
     def draw_fruit(self, dis):
+        """
+        Used for drawing the points the player collects
+        :param dis: the display on witch it is drown
+        :return: none
+        """
         pygame.draw.rect(dis, self.color, [self.x, self.y, 10, 10])
         pygame.display.update()
 
@@ -28,23 +41,43 @@ class Fruit:
 class Snake:
     def __init__(self):
         super().__init__()
+        '''
+        The snake always starts with the length of 5 and heading downwards 
+        '''
         self.nrOfParts = 5
         self.parts = [SnakePart(10, 10), SnakePart(10, 20), SnakePart(10, 30), SnakePart(10, 40), SnakePart(10, 50)]
         self.direction = 'down'
         self.color = (0, 255, 0)
 
     def init_snake(self, dis):
+        """
+        For drawing the initial snake
+        :param dis: the display on witch it is drown
+        :return: none
+        """
         for part in self.parts:
             pygame.draw.rect(dis, self.color, [part.x, part.y, 10, 10])
         pygame.display.update()
 
     def draw_snake(self, dis):
+        """
+        Used to draw the snake. The last part of the snake is colored as the background
+        and we only draw the head(for better performance).
+        :param dis: the display on witch it is drown
+        :return: none
+        """
         pygame.draw.rect(dis, (0, 0, 0), [self.parts[0].x, self.parts[0].y, 10, 10])
         pygame.draw.rect(dis, self.color, [self.parts[-1].x, self.parts[-1].y, 10, 10])
         pygame.display.update()
         self.parts.pop(0)
 
     def move_snake(self, dis):
+        """
+        Used to move the snake. It gets the coordinates of the head and changes direction based on the
+        direction attribute. A new head is created and the last part is removed when using the draw_snake method.
+        :param dis: the display on witch it is drown
+        :return: none
+        """
         x = self.parts[-1].x
         y = self.parts[-1].y
         if self.direction == 'down':
@@ -59,22 +92,43 @@ class Snake:
         self.parts.append(SnakePart(x, y))
 
     def change_direction(self, direction):
+        """
+        Changes the direction attribute.
+        :param direction: The new direction
+        :return: none
+        """
         self.direction = direction
 
 
 class Obstacle:
     def __init__(self, x, y):
+        """
+        :param x: the x coordinate of the part
+        :param y: the y coordinate of the part
+        """
         self.x = x
         self.y = y
         self.color = (255, 255, 255)
 
     def draw(self, dis):
+        """
+        Used to draw the obstacle.
+        :param dis: the display on witch it is drown
+        :return: none
+        """
         pygame.draw.rect(dis, self.color, [self.x, self.y, 10, 10])
         pygame.display.update()
 
 
 class Game:
     def __init__(self, width, height, obstacles):
+        """
+        Initializes the game.
+        Checks if the obstacles parsed from the config file are valid.
+        :param width: width of the board
+        :param height: height of the board
+        :param obstacles: obstacle list
+        """
         super().__init__()
         self.player = Snake()
         self.gameOver = False
@@ -92,6 +146,10 @@ class Game:
         self.start_game()
 
     def start_game(self):
+        """
+        Keeps the game running and initializes the board.
+        :return: none
+        """
         pygame.init()
         self.dis = pygame.display.set_mode((self.width, self.height))
         pygame.display.update()
@@ -112,6 +170,11 @@ class Game:
         quit()
 
     def run_game(self):
+        """
+        Used to draw the snake continuously, check for points, end of the game etc.
+        It checks for player keyboard input(the arrow keys) for changing the direction.
+        :return: none
+        """
         self.player.move_snake(self.dis)
         self.fruit.draw_fruit(self.dis)
         self.eat()
@@ -146,6 +209,10 @@ class Game:
             i += 1
 
     def check_end(self):
+        """
+        Checks if the player got in contact with the border or with an obstacle.
+        :return: none
+        """
         if not (0 <= self.player.parts[-1].x <= self.width-10 and 0 <= self.player.parts[-1].y <= self.height-10):
             self.gameRunning = False
             return
@@ -160,6 +227,11 @@ class Game:
                 break
 
     def eat(self):
+        """
+        Used when the player gets in contact with a point.
+        When the snake gets a point it grows in size.
+        :return: none
+        """
         if self.player.parts[-1].x == self.fruit.x and self.player.parts[-1].y == self.fruit.y:
             if self.player.direction == 'down':
                 self.player.parts.append(SnakePart(self.fruit.x, self.fruit.y+10))
@@ -175,6 +247,10 @@ class Game:
             self.score += 1
 
     def reset(self):
+        """
+        Starts the game over.
+        :return: none
+        """
         self.player = Snake()
         self.gameRunning = True
         self.score = 0
@@ -186,6 +262,11 @@ class Game:
         pygame.display.update()
 
     def end_screen(self):
+        """
+        Used to draw the high score screen.
+        It takes keyboard input from the player to either start a new game or exit the game.
+        :return: none
+        """
         choosedoption = False
         self.dis = pygame.display.set_mode((400, 400))
         myfont = pygame.font.SysFont("monospace", 15)
@@ -210,6 +291,11 @@ class Game:
                         choosedoption = True
 
     def choose_fruit_xy(self):
+        """
+        Used to choose where the next point will be created.
+        It makes sure its not where there are obstacles or snake parts.
+        :return: none
+        """
         ok1 = False
         ok2 = False
         while not (ok1 and ok2):
@@ -225,6 +311,10 @@ class Game:
                     break
 
     def draw_obstacles(self):
+        """
+        Used to draw all the obstacles.
+        :return: none
+        """
         for ob in self.obstacles:
             ob.draw(self.dis)
 
